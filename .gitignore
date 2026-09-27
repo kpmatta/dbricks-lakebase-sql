@@ -1,0 +1,12 @@
+.databricks/
+app.yaml
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+.DS_Store
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

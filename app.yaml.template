@@ -1,0 +1,19 @@
+# Databricks Apps injects DATABRICKS_HOST, DATABRICKS_APP_NAME, and DATABRICKS_APP_PORT.
+# Do not add a shared PGUSER or PGPASSWORD; database credentials are issued per user.
+command:
+  - python
+  - app.py
+
+env:
+  - name: PGHOST
+    value: "<your-lakebase-endpoint-host>"
+  - name: PGPORT
+    value: "5432"
+  - name: PGDATABASE
+    value: databricks_postgres
+  - name: PGSSLMODE
+    value: require
+
+# Optional: set this to skip endpoint discovery.
+# - name: LAKEBASE_ENDPOINT
+#   value: projects/<project-id>/branches/<branch-id>/endpoints/<endpoint-id>
