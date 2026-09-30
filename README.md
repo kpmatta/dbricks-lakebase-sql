@@ -16,9 +16,53 @@ Lakebase OAuth requires a matching Postgres role for every Databricks user. The 
 
 ## Run and deploy
 
+### Deployment helper
+
+Use `scripts/workbench.sh` for local development and Databricks source sync/deploy. Set `DATABRICKS_HOST`, `PGHOST`, and `DATABRICKS_CONFIG_PROFILE` for local run. For sync/deploy, ensure `app.yaml` exists and its `PGHOST` is configured; the helper creates it from the template if missing, then stops so you can edit it.
+
+```bash
+scripts/workbench.sh run
+scripts/workbench.sh sync
+scripts/workbench.sh deploy
+```
+
+`sync` and `deploy` use the configured CLI profile and default app name `lakebase-workbench`. Override with `PROFILE`, `APP_NAME`, or `WORKSPACE_PATH` when needed. `deploy` syncs source first and creates the Databricks App if it does not already exist.
+
 ### Run locally
 
-Install `requirements.txt`, then authenticate to the target workspace with `databricks auth login --host <workspace-url> --profile <profile-name>`. Set `DATABRICKS_HOST`, `DATABRICKS_CONFIG_PROFILE`, `PGHOST`, and `PGDATABASE`, then run `python app.py`. The SDK uses the saved OAuth profile and handles token refresh. In Databricks Apps, the local profile path is disabled and requests require the forwarded user token.
+Install `uv`, activate this project's environment, then sync the dependencies from `pyproject.toml`:
+
+```bash
+uv sync --active
+```
+
+Authenticate to the target workspace with the Databricks CLI, then configure the local app. Replace the example values with your workspace URL, CLI profile, and Lakebase endpoint host:
+
+```bash
+databricks auth login --host "https://<your-workspace-host>" --profile "<your-profile>"
+
+export DATABRICKS_HOST="https://<your-workspace-host>"
+export DATABRICKS_CONFIG_PROFILE="<your-profile>"
+export PGHOST="<your-lakebase-endpoint-host>"
+export PGPORT="5432"
+export PGDATABASE="databricks_postgres"
+export PGSSLMODE="require"
+```
+
+Do not use the angle-bracket placeholders literally. For the workspace profile configured on this machine, the equivalent settings are:
+
+```bash
+export DATABRICKS_HOST="https://dbc-18dc1ab5-483a.cloud.databricks.com"
+export DATABRICKS_CONFIG_PROFILE="lakebase-wb"
+```
+
+Start the app through `uv` and open `http://localhost:8000` in your browser:
+
+```bash
+uv run app.py
+```
+
+The SDK uses the saved OAuth profile and handles token refresh. Your Databricks user must have a matching Lakebase OAuth role and the required database grants. In Databricks Apps, the local profile path is disabled and requests require the forwarded user token. `requirements.txt` is retained for Databricks Apps deployment compatibility; local development uses `pyproject.toml` and `uv.lock`.
 
 ### Deploy to Databricks
 

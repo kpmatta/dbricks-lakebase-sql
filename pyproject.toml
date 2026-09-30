@@ -1,0 +1,12 @@
+[project]
+name = "lakebase-sql-workbench"
+version = "0.1.0"
+description = "A Databricks App for browsing Lakebase Postgres and running SQL."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "databricks-sdk>=0.60.0",
+    "fastapi>=0.115,<1",
+    "psycopg[binary]>=3.2,<4",
+    "uvicorn[standard]>=0.30,<1",
+]

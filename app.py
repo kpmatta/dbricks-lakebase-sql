@@ -35,6 +35,7 @@ class UserContext:
 class QueryRequest(BaseModel):
     database: str = Field(min_length=1, max_length=128)
     query: str = Field(min_length=1, max_length=100_000)
+    limit: int | None = Field(default=500, ge=1, le=100_000)
 
 
 def local_workspace_client(host: str, profile: str | None) -> WorkspaceClient:
@@ -301,8 +302,8 @@ def run_query(body: QueryRequest, user: UserContext = Depends(require_user)) -> 
             cursor.execute("SET statement_timeout = '30s'")
             cursor.execute(statement, prepare=False)
             columns = [item.name for item in cursor.description] if cursor.description else []
-            rows = cursor.fetchmany(MAX_RESULT_ROWS) if columns else []
-            return {"columns": columns, "rows": rows, "row_count": len(rows), "truncated": len(rows) == MAX_RESULT_ROWS, "command": cursor.statusmessage, "elapsed_ms": round((monotonic() - started) * 1000)}
+            rows = cursor.fetchmany(body.limit) if columns and body.limit is not None else cursor.fetchall() if columns else []
+            return {"columns": columns, "rows": rows, "row_count": len(rows), "truncated": body.limit is not None and len(rows) == body.limit, "command": cursor.statusmessage, "elapsed_ms": round((monotonic() - started) * 1000)}
     except HTTPException:
         raise
     except Exception as exc:
